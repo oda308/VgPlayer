@@ -1,9 +1,14 @@
 package com.example.vgplayer
 
+import android.app.Service
+import android.content.ComponentName
+import android.content.Intent
+import android.os.Binder
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
-import android.widget.Button
 import android.widget.ImageButton
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
@@ -18,6 +23,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val serviceIntent = Intent(this, PlayerService::class.java)
 
         player = ExoPlayer.Builder(applicationContext).build()
         player.addListener(playerListener)
@@ -41,12 +48,17 @@ class MainActivity : AppCompatActivity() {
             Log.d("vgPlayer", "playButton was tapped")
             if (player.isPlaying) {
                 Log.d("vgPlayer", "pause")
-                playButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+                stopService(serviceIntent)
                 player.pause()
+                playButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
             } else {
                 Log.d("vgPlayer", "play")
-                playButton.setImageResource(R.drawable.ic_baseline_pause_24)
+                if (Build.VERSION.SDK_INT > 25) {
+                    startForegroundService(serviceIntent)
+                }
+                startService(serviceIntent)
                 player.play()
+                playButton.setImageResource(R.drawable.ic_baseline_pause_24)
             }
         }
 
@@ -77,5 +89,31 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         Log.d("vgPlayer", "プレーヤーリソースを解放")
         player.release()
+    }
+}
+
+class PlayerService: Service() {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d("vgPlayer", "onStartCommand()")
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    override fun onBind(intent: Intent?): IBinder? {
+        TODO("Not yet implemented")
+    }
+
+    override fun startForegroundService(service: Intent?): ComponentName? {
+        Log.d("vgPlayer", "startForegroundService()")
+        return super.startForegroundService(service)
+    }
+
+    override fun startService(service: Intent?): ComponentName? {
+        Log.d("vgPlayer", "startService()")
+        return super.startService(service)
+    }
+
+    override fun stopService(name: Intent?): Boolean {
+        Log.d("vgPlayer", "stopService()")
+        return super.stopService(name)
     }
 }
